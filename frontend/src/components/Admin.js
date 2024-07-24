@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
-const socket = io('http://localhost:4000');
+const socket = io(`http://localhost:4000`);
 
 function Admin() {
   const [users, setUsers] = useState([]);
@@ -55,12 +55,12 @@ function Admin() {
     <div>
       <h2>Session ID: {sessionId}</h2>
 
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: `flex`, alignItems: `center` }}>
         <h4>{sessionUserUrl}</h4>
 
         <button 
           onClick={handleCopyUrl} 
-          style={{ cursor: 'pointer', marginLeft: '10px' }} 
+          style={{ cursor: `pointer`, marginLeft: `10px` }} 
           title="Copy URL"
         >Copy Link</button>
       </div>
@@ -84,15 +84,15 @@ function Admin() {
           {users.map((user) => (
             <li 
               key={user.id}
-              style={{ display: 'flex', gap: '20px' }}
+              style={{ display: `flex`, gap: `20px` }}
             >
               <span
-                style={{ width: '100px' }}
+                style={{ width: `100px` }}
               >
                 {user.name}
               </span>
 
-              <span style={{ display: 'flex' }}>
+              <span style={{ display: `flex` }}>
                 {!shouldShowResults && 
                   <div>
                     {user.value ? `ready` : `?`}

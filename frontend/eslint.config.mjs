@@ -30,6 +30,7 @@ export default [
       'react/jsx-uses-react': 'error',
       'react/jsx-uses-vars': 'error',
       'indent': ['error', 2],
+      'quotes': ['error', 'backtick'],
     },
     settings: {
       react: {

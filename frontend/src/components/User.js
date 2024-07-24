@@ -2,11 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
-const socket = io('http://localhost:4000');
+const socket = io(`http://localhost:4000`);
 
 function User() {
   const [users, setUsers] = useState([]);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(``);
   const [hasJoined, setHasJoined] = useState(false);
   const [shouldShowResults, setShouldShowResults] = useState(false);
 
@@ -60,7 +60,7 @@ function User() {
       }
 
       {hasJoined &&
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: `flex` }}>
         <button
           onClick={()=>{
             socket.emit(`setValue`, {
@@ -106,15 +106,15 @@ function User() {
           {users.map((user) => (
             <li 
               key={user.id}
-              style={{ display: 'flex', gap: '20px' }}
+              style={{ display: `flex`, gap: `20px` }}
             >
               <span
-                style={{ width: '100px' }}
+                style={{ width: `100px` }}
               >
                 {user.name}
               </span>
 
-              <span style={{ display: 'flex' }}>
+              <span style={{ display: `flex` }}>
                 {!shouldShowResults && 
                   <div>
                     {user.id === currentUserId && (user.value ? user.value : `?`)}

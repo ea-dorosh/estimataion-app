@@ -1,4 +1,3 @@
-// disable-eslint no-unused-vars
 import React, { useState, useEffect, useMemo } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
@@ -12,7 +11,7 @@ function Admin() {
 
   const sessionUserUrl = useMemo(() => {
     return window.location.href.replace(`session`, `session-user`);
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
     console.log(`shouldShowResults`, shouldShowResults);

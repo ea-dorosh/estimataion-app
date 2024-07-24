@@ -1,11 +1,11 @@
-const express = require(`express`);
-const http = require(`http`);
-const socketIo = require(`socket.io`);
-const cors = require(`cors`);
+import express from 'express';
+import http from 'http';
+import { Server as SocketIoServer } from 'socket.io';
+import cors from 'cors';
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
+const io = new SocketIoServer(server, {
   cors: {
     origin: `*`,
   },
@@ -18,7 +18,7 @@ const sessions = {};
 io.on(`connection`, (socket) => {
   socket.on(`joinSession`, ({ sessionId, name }) => {
     socket.sessionId = sessionId; // Store the sessionId on the socket object
-  
+
     if (!sessions[sessionId]) {
       sessions[sessionId] = {
         admin: null,
@@ -33,12 +33,12 @@ io.on(`connection`, (socket) => {
         sessions[sessionId].users.push({ id: socket.id, name });
       }
     }
-  
+
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     console.log(`User ${name} joined session ${sessionId}`, sessions[sessionId]);
     socket.join(sessionId);
   });
-  
+
   socket.on(`getUsers`, ({ sessionId }) => {
     console.log(`getUsers`, sessionId);
     if (!sessions[sessionId]) {
@@ -48,7 +48,7 @@ io.on(`connection`, (socket) => {
     console.log(`updateUsers`, sessions[sessionId].users);
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
   });
-  
+
   socket.on(`setValue`, ({
     sessionId, 
     userId, 
@@ -60,14 +60,14 @@ io.on(`connection`, (socket) => {
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
   });
-  
+
   socket.on(`showResults`, ({
     sessionId, 
   }) => {
     console.log(`showResultsServer`);
     io.to(sessionId).emit(`showResultsServer`, sessions[sessionId].users);
   });
-  
+
   socket.on(`resetResults`, ({
     sessionId, 
   }) => {
@@ -77,7 +77,7 @@ io.on(`connection`, (socket) => {
     console.log(`resetResultsServer`);
     io.to(sessionId).emit(`resetResultsServer`, sessions[sessionId].users);
   });
-  
+
   socket.on(`disconnect`, () => {
     const sessionId = socket.sessionId; // Get the sessionId from the socket object
     if (sessionId && sessions[sessionId]) {

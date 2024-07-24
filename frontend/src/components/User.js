@@ -12,7 +12,7 @@ function User() {
 
   const currentUserId = useMemo(() => {
     return users?.find((user) => user.name === name)?.id || null;
-  }, [users]);
+  }, [users, name]);
 
   console.log(`currentUserId`, currentUserId);
 
@@ -34,6 +34,8 @@ function User() {
     });
 
     socket.emit(`getUsers`, { sessionId });
+    
+    // eslint-disable-next-line
   }, []);
 
 

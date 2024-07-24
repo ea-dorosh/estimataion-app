@@ -1,3 +1,4 @@
+// disable-eslint no-unused-vars
 import React, { useState, useEffect, useMemo } from 'react';
 import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
@@ -26,13 +27,13 @@ function Admin() {
     });
 
     socket.on(`showResultsServer`, () => {
-        setShouldShowResults(true);
+      setShouldShowResults(true);
     });
 
     socket.on(`resetResultsServer`, (users) => {
-        console.log(`resetResultsServer`, users);
-        setShouldShowResults(false);
-        setUsers(users);
+      console.log(`resetResultsServer`, users);
+      setShouldShowResults(false);
+      setUsers(users);
     });
 
     // Fetch users again when admin reconnects
@@ -70,13 +71,13 @@ function Admin() {
         <button 
           onClick={() => {
             if(!shouldShowResults) {
-                socket.emit(`showResults`, { sessionId });
+              socket.emit(`showResults`, { sessionId });
             } else {
-                socket.emit(`resetResults`, { sessionId });
+              socket.emit(`resetResults`, { sessionId });
             }
           }} 
         >
-            {!shouldShowResults ? `Show Results` : `Reset Results`}
+          {!shouldShowResults ? `Show Results` : `Reset Results`}
         </button>
 
         <ul>
@@ -85,13 +86,13 @@ function Admin() {
               key={user.id}
               style={{ display: 'flex', gap: '20px' }}
             >
-                <span
-                    style={{ width: '100px' }}
-                >
-                    {user.name}
-                </span>
+              <span
+                style={{ width: '100px' }}
+              >
+                {user.name}
+              </span>
 
-                <span style={{ display: 'flex' }}>
+              <span style={{ display: 'flex' }}>
                 {!shouldShowResults && 
                   <div>
                     {user.value ? `ready` : `?`}

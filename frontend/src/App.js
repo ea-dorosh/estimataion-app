@@ -6,7 +6,7 @@ import User from './components/User';
 
 function App() {
   return (
-    <div className="App">
+    <div className="app">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/session/:id" element={<Admin />} />

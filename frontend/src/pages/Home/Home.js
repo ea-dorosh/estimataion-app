@@ -5,7 +5,7 @@ function Home() {
   const navigate = useNavigate();
 
   const createSession = () => {
-    const sessionId = Date.now().toString(); // Простой способ создания уникального ID сессии
+    const sessionId = Date.now().toString();
     navigate(`/session/${sessionId}`);
   };
 

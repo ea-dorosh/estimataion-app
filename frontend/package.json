@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "classnames": "^2.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.25.1",
@@ -19,7 +20,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "eslint": "npx eslint . --fix",
-    "lint": "stylelint '**/*.{css,scss}' --fix"
+    "style": "stylelint '**/*.{css,scss}' --fix"
   },
   "eslintConfig": {
     "extends": [
@@ -42,9 +43,10 @@
   "devDependencies": {
     "@eslint/js": "^9.7.0",
     "eslint": "^8.0.0",
-    "eslint-plugin-react": "^7.35.0",
     "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-react": "^7.35.0",
     "globals": "^15.8.0",
+    "sass": "^1.77.8",
     "stylelint": "^16.7.0",
     "stylelint-config-recommended": "^14.0.1",
     "stylelint-config-standard": "^36.0.1"

@@ -1,0 +1,51 @@
+@import 'variables';
+
+.sessionUrl {
+  display: flex;
+  align-items: center;
+  color: $primary-contrast-color;
+  border-radius: 5px;
+  background-color: $secondary-background-color;
+  width: fit-content;
+  padding: 0.6rem 1.2rem;
+  margin-bottom: 6rem;
+
+  h4 {
+    font-weight: normal;
+  }
+
+  button {
+    margin-left: 2rem;
+  }
+}
+
+.subtitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.subtitle {
+  color: $primary-color;
+}
+
+.user {
+  display: flex;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.userName {
+  width: 200px;
+  margin-right: 2rem;
+  color: $primary-contrast-color;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.userValue {
+  text-align: center;
+  width: 100px;
+  background-color: $secondary-background-color;
+  color: $secondary-color;
+}

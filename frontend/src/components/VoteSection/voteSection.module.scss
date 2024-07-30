@@ -1,0 +1,71 @@
+@import 'variables';
+
+.wrapper {
+  width: 40%;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+  padding: 20px;
+}
+
+.subtitleWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subtitle {
+  color: $primary-color;
+}
+
+.storyPointsWrapper {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.storyPointsButton {
+  background-color: $secondary-color;
+  color: $primary-contrast-color;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  width: 80px;
+  font-size: 14px;
+  padding: 10px 0;
+  font-weight: bold;
+}
+
+.userList {
+  margin-top: 3rem;
+}
+
+.userWrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.userName {
+  width: 200px;
+  margin-right: 2rem;
+  color: $primary-contrast-color;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.userValue {
+  font-weight: bold;
+  border-radius: 4px;
+  text-align: center;
+  width: 100px;
+  padding: 10px;
+  background-color: $secondary-background-color;
+  color: $secondary-color;
+
+  &.ready {
+    background-color: $success-color;
+    color: $secondary-background-color; 
+  }
+}

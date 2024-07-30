@@ -1,12 +1,23 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
 
-function Home() {
+function Home({ socket }) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.on(`createSessionServer`, ({session, sessionId}) => {
+      console.log(`createSessionServer`, session);
+
+      sessionStorage.setItem(`${sessionId}`, `admin`);
+
+      navigate(`/session/${sessionId}`);
+    });
+  }, []);
 
   const createSession = () => {
     const sessionId = Date.now().toString();
-    navigate(`/session/${sessionId}`);
+
+    socket.emit(`createSession`, { sessionId });
   };
 
   return (

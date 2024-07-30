@@ -7,6 +7,7 @@
   border: none;
   border-radius: 4px;
   transition: background-color 0.3s;
+  min-width: 100px;
 
   &:disabled {
     cursor: not-allowed;
@@ -16,9 +17,10 @@
   &.primary {
     background-color: $primary-color;
     color: $primary-contrast-color;
+  }
 
-    &:hover {
-      background-color: $hover-button-color;
-    }
+  &.secondary {
+    background-color: $secondary-color;
+    color: $primary-contrast-color;
   }
 }

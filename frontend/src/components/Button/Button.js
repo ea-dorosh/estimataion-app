@@ -2,11 +2,12 @@ import React from 'react';
 import style from './button.module.scss';
 import classNames from 'classnames';
 
-function Button({ onClick, children, className, disabled, primary }) {
+function Button({ onClick, children, className, disabled, primary, secondary }) {
 
   const buttonClass = classNames({
     [style.button]: true,
     [style.primary]: primary,
+    [style.secondary]: secondary,
   });
 
   return (

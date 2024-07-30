@@ -16,83 +16,145 @@ app.use(cors());
 const sessions = {};
 
 io.on(`connection`, (socket) => {
-  socket.on(`joinSession`, ({ sessionId, name }) => {
-    socket.sessionId = sessionId; // Store the sessionId on the socket object
+  console.log(`New connection: ${socket.id}`);
+
+  const setSessionId = (sessionId) => {
+    socket.sessionId = sessionId;
+    console.log(`Session ID ${sessionId} set for socket ${socket.id}`);
+  };
+
+  socket.on(`createSession`, ({ sessionId }) => {
+    setSessionId(sessionId);
 
     if (!sessions[sessionId]) {
       sessions[sessionId] = {
-        admin: null,
-        users: [],
+        admin: socket.id,
+        users: {
+          FE: [],
+          BE: [],
+        },
       };
     }
-    if (name === `Admin`) {
-      sessions[sessionId].admin = socket.id;
-    } else {
-      const userExists = sessions[sessionId].users.some(user => user.name === name);
-      if (!userExists) {
-        sessions[sessionId].users.push({ id: socket.id, name });
-      }
+    socket.join(sessionId);
+
+    io.to(sessionId).emit(`createSessionServer`, {
+      session: sessions[sessionId],
+      sessionId,
+    });
+
+    console.log(`Session ${sessionId} has been created`, sessions[sessionId]);
+  });
+
+  socket.on(`joinSessionFE`, ({ sessionId, name }) => {
+    setSessionId(sessionId);
+
+    if (!sessions[sessionId]) {
+      return;
+    }
+
+    const userExists = sessions[sessionId].users.FE.some(user => user.name === name);
+    if (!userExists) {
+      sessions[sessionId].users.FE.push({ id: socket.id, name });
     }
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
-    console.log(`User ${name} joined session ${sessionId}`, sessions[sessionId]);
     socket.join(sessionId);
+
+    console.log(`User ${name} joined FE session ${sessionId}`, sessions[sessionId]);
+  });
+
+  socket.on(`joinSessionBE`, ({ sessionId, name }) => {
+    setSessionId(sessionId);
+
+    if (!sessions[sessionId]) {
+      return;
+    }
+
+    const userExists = sessions[sessionId].users.BE.some(user => user.name === name);
+    if (!userExists) {
+      sessions[sessionId].users.BE.push({ id: socket.id, name });
+    }
+
+    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    socket.join(sessionId);
+
+    console.log(`User ${name} joined BE session ${sessionId}`, sessions[sessionId]);
   });
 
   socket.on(`getUsers`, ({ sessionId }) => {
-    console.log(`getUsers`, sessionId);
+    setSessionId(sessionId);
+
     if (!sessions[sessionId]) {
       return;
     }
     socket.join(sessionId);
-    console.log(`updateUsers`, sessions[sessionId].users);
-    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
-  });
-
-  socket.on(`setValue`, ({
-    sessionId, 
-    userId, 
-    value,
-  }) => {
-    console.log(`userId: ${userId} set value ${value}`);
-
-    sessions[sessionId].users.find(user => user.id === userId).value = value;
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
   });
 
-  socket.on(`showResults`, ({
-    sessionId, 
-  }) => {
-    console.log(`showResultsServer`);
-    io.to(sessionId).emit(`showResultsServer`, sessions[sessionId].users);
+  socket.on(`setValueFE`, ({ sessionId, userId, value }) => {
+    const user = sessions[sessionId].users.FE.find(user => user.id === userId);
+    if (user) {
+      user.value = value;
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    }
   });
 
-  socket.on(`resetResults`, ({
-    sessionId, 
-  }) => {
-    sessions[sessionId].users.forEach(user => {
-      user.value = null;
-    });
-    console.log(`resetResultsServer`);
-    io.to(sessionId).emit(`resetResultsServer`, sessions[sessionId].users);
+  socket.on(`setValueBE`, ({ sessionId, userId, value }) => {
+    const user = sessions[sessionId].users.BE.find(user => user.id === userId);
+    if (user) {
+      user.value = value;
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    }
+  });
+
+  socket.on(`showResultsFE`, ({ sessionId }) => {
+    io.to(sessionId).emit(`showResultsFEServer`, sessions[sessionId].users);
+  });
+
+  socket.on(`resetResultsFE`, ({ sessionId }) => {
+    if (sessions[sessionId]) {
+      sessions[sessionId].users.FE.forEach(user => user.value = null);
+      io.to(sessionId).emit(`resetResultsFEServer`, sessions[sessionId].users);
+    }
+  });
+
+  socket.on(`showResultsBE`, ({ sessionId }) => {
+    io.to(sessionId).emit(`showResultsBEServer`, sessions[sessionId].users);
+  });
+
+  socket.on(`resetResultsBE`, ({ sessionId }) => {
+    if (sessions[sessionId]) {
+      sessions[sessionId].users.BE.forEach(user => user.value = null);
+      io.to(sessionId).emit(`resetResultsBEServer`, sessions[sessionId].users);
+    }
   });
 
   socket.on(`disconnect`, () => {
     const sessionId = socket.sessionId; // Get the sessionId from the socket object
+
     if (sessionId && sessions[sessionId]) {
       const session = sessions[sessionId];
+
       if (socket.id === session.admin) {
         console.log(`Admin disconnected from session ${sessionId}`);
-        // Optionally, you can handle admin disconnection differently if needed
       } else {
-        const userIndex = session.users.findIndex(user => user.id === socket.id);
-        if (userIndex !== -1) {
-          const user = session.users.splice(userIndex, 1)[0];
-          console.log(`User ${user.name} disconnected from session ${sessionId}`, sessions[sessionId]);
+        const userIndexFE = session.users.FE.findIndex(user => user.id === socket.id);
+
+        if (userIndexFE !== -1) {
+          session.users.FE.splice(userIndexFE, 1)[0];
+        }
+
+        const userIndexBE = session.users.BE.findIndex(user => user.id === socket.id);
+
+        if (userIndexBE !== -1) {
+          session.users.BE.splice(userIndexBE, 1)[0];
         }
       }
+
       io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    } else {
+      console.log(`No session ID found for socket ${socket.id}`);
     }
   });
 });

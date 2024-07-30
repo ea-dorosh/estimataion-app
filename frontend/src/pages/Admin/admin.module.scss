@@ -19,33 +19,7 @@
   }
 }
 
-.subtitleWrapper {
+.pageWrapper {
   display: flex;
-  align-items: center;
   gap: 2rem;
-}
-
-.subtitle {
-  color: $primary-color;
-}
-
-.user {
-  display: flex;
-  margin-bottom: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.userName {
-  width: 200px;
-  margin-right: 2rem;
-  color: $primary-contrast-color;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.userValue {
-  text-align: center;
-  width: 100px;
-  background-color: $secondary-background-color;
-  color: $secondary-color;
 }

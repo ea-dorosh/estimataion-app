@@ -6,7 +6,7 @@ import User from './pages/User/User';
 import style from './app.module.scss';
 import io from 'socket.io-client';
 
-const socket = io(process.env.REACT_APP_SOCKET_URL || '/');
+const socket = io(process.env.REACT_APP_SOCKET_URL || `/`);
 
 function App() {
   return (

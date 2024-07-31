@@ -2,7 +2,7 @@ import React from 'react';
 import style from './button.module.scss';
 import classNames from 'classnames';
 
-function Button({ onClick, children, className, disabled, primary, secondary }) {
+function Button({ onClick, children, disabled, primary, secondary }) {
 
   const buttonClass = classNames({
     [style.button]: true,

@@ -21,6 +21,8 @@ export default [
         navigator: 'readonly',
         alert: 'readonly',
         document: 'readonly',
+        sessionStorage: 'readonly',
+        process: 'readonly',
       },
     },
     plugins: {

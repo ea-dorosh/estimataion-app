@@ -5,7 +5,7 @@ import Admin from './pages/Admin/Admin';
 import style from './app.module.scss';
 import io from 'socket.io-client';
 
-const socket = io(process.env.REACT_APP_SOCKET_URL || `/`);
+const socket = io(`https://estimation-app-ea-dorosh-ea-doroshs-projects.vercel.app/`);
 
 function App() {
   return (

@@ -12,6 +12,8 @@ function Home({ socket }) {
 
       navigate(`/session/${sessionId}`);
     });
+
+    // eslint-disable-next-line
   }, []);
 
   const createSession = () => {

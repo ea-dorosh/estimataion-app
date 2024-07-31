@@ -70,6 +70,8 @@ function Admin({ socket }) {
     return () => {
       socket.disconnect();
     };
+
+    // eslint-disable-next-line
   }, [sessionId]);
 
   const handleCopyUrl = () => {

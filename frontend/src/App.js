@@ -5,7 +5,7 @@ import Admin from './pages/Admin/Admin';
 import style from './app.module.scss';
 import io from 'socket.io-client';
 
-const socket = io(`localhost:4000`);
+const socket = io(`13.60.66.226:4000`);
 
 function App() {
   return (

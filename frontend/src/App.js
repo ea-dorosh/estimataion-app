@@ -5,7 +5,7 @@ import Admin from './pages/Admin/Admin';
 import style from './app.module.scss';
 import io from 'socket.io-client';
 
-const socket = io(`https://estimataion-app.onrender.com/`);
+const socket = io(`localhost:4000`);
 
 function App() {
   return (

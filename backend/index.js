@@ -19,11 +19,8 @@ app.use(cors());
 const sessions = {};
 
 io.on(`connection`, (socket) => {
-  console.log(`New connection: ${socket.id}`);
-
   const setSessionId = (sessionId) => {
     socket.sessionId = sessionId;
-    console.log(`Session ID ${sessionId} set for socket ${socket.id}`);
   };
 
   socket.on(`createSession`, ({ sessionId }) => {
@@ -44,8 +41,6 @@ io.on(`connection`, (socket) => {
       session: sessions[sessionId],
       sessionId,
     });
-
-    console.log(`Session ${sessionId} has been created`, sessions[sessionId]);
   });
 
   socket.on(`joinSessionFE`, ({ sessionId, name }) => {
@@ -62,8 +57,6 @@ io.on(`connection`, (socket) => {
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     socket.join(sessionId);
-
-    console.log(`User ${name} joined FE session ${sessionId}`, sessions[sessionId]);
   });
 
   socket.on(`joinSessionBE`, ({ sessionId, name }) => {
@@ -80,8 +73,6 @@ io.on(`connection`, (socket) => {
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     socket.join(sessionId);
-
-    console.log(`User ${name} joined BE session ${sessionId}`, sessions[sessionId]);
   });
 
   socket.on(`getUsers`, ({ sessionId }) => {
@@ -139,9 +130,7 @@ io.on(`connection`, (socket) => {
     if (sessionId && sessions[sessionId]) {
       const session = sessions[sessionId];
 
-      if (socket.id === session.admin) {
-        console.log(`Admin disconnected from session ${sessionId}`);
-      } else {
+      if (socket.id !== session.admin) {
         const userIndexFE = session.users.FE.findIndex(user => user.id === socket.id);
 
         if (userIndexFE !== -1) {
@@ -153,11 +142,9 @@ io.on(`connection`, (socket) => {
         if (userIndexBE !== -1) {
           session.users.BE.splice(userIndexBE, 1)[0];
         }
-      }
 
-      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
-    } else {
-      console.log(`No session ID found for socket ${socket.id}`);
+        io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+      }
     }
   });
 });

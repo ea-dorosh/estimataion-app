@@ -43,38 +43,6 @@ io.on(`connection`, (socket) => {
     });
   });
 
-  socket.on(`joinSessionFE`, ({ sessionId, name }) => {
-    setSessionId(sessionId);
-
-    if (!sessions[sessionId]) {
-      return;
-    }
-
-    const userExists = sessions[sessionId].users.FE.some(user => user.name === name);
-    if (!userExists) {
-      sessions[sessionId].users.FE.push({ id: socket.id, name });
-    }
-
-    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
-    socket.join(sessionId);
-  });
-
-  socket.on(`joinSessionBE`, ({ sessionId, name }) => {
-    setSessionId(sessionId);
-
-    if (!sessions[sessionId]) {
-      return;
-    }
-
-    const userExists = sessions[sessionId].users.BE.some(user => user.name === name);
-    if (!userExists) {
-      sessions[sessionId].users.BE.push({ id: socket.id, name });
-    }
-
-    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
-    socket.join(sessionId);
-  });
-
   socket.on(`getUsers`, ({ sessionId }) => {
     setSessionId(sessionId);
 
@@ -84,6 +52,38 @@ io.on(`connection`, (socket) => {
     socket.join(sessionId);
 
     io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+  });
+
+  socket.on(`joinSessionFE`, ({ sessionId, name, socketId }) => {
+    setSessionId(sessionId);
+
+    if (!sessions[sessionId]) {
+      return;
+    }
+
+    const userExists = sessions[sessionId].users.FE.some(user => user.id === socketId);
+    if (!userExists) {
+      sessions[sessionId].users.FE.push({ id: socket.id, name });
+
+      io.to(sessionId).emit(`joinSessionFeServer`, socketId);
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    }
+  });
+
+  socket.on(`joinSessionBE`, ({ sessionId, name, socketId }) => {
+    setSessionId(sessionId);
+
+    if (!sessions[sessionId]) {
+      return;
+    }
+
+    const userExists = sessions[sessionId].users.BE.some(user => user.id === socketId);
+    if (!userExists) {
+      sessions[sessionId].users.BE.push({ id: socket.id, name });
+
+      io.to(sessionId).emit(`joinSessionBeServer`, socketId);
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    }
   });
 
   socket.on(`setValueFE`, ({ sessionId, userId, value }) => {

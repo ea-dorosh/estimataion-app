@@ -80,7 +80,7 @@ function VoteSection({
             className={style.userWrapper}
           >
             <span className={style.userName}>
-              {user.name}
+              {user.name}   {user.id}
             </span>
 
             <span className={userValueClass}>

@@ -17,6 +17,11 @@ function Admin({ socket }) {
   const [hasName, setHasName] = useState(false);
 
 
+  const socketId = useMemo(() => {
+    return socket.id;
+  }, [socket.id]);
+
+
   const isAdmin = useMemo(() => {
     const sessionValue = sessionStorage.getItem(`${sessionId}`);
 
@@ -26,15 +31,6 @@ function Admin({ socket }) {
 
     return false;
   }, [sessionId]);
-
-  const currentUserIdFE = useMemo(() => {
-    return users?.FE.find((user) => user.name === name)?.id || null;
-  }, [users, name]);
-
-  const currentUserIdBE = useMemo(() => {
-    return users?.BE.find((user) => user.name === name)?.id || null;
-  }, [users, name]);
-
 
   useEffect(() => {
     socket.emit(`getUsers`, { sessionId });
@@ -69,13 +65,25 @@ function Admin({ socket }) {
   }, [sessionId]);
 
   const handleFrontendJoin = () => {
-    socket.emit(`joinSessionFE`, { sessionId, name });
-    setHasJoinedFE(true);
+    socket.on(`joinSessionFeServer`, (socketIdServer) => {
+      console.log(`handleFrontendJoin socketIdServer`, socketIdServer);
+      if (socketIdServer === socketId) {
+        setHasJoinedFE(true);
+      }
+    });
+
+    socket.emit(`joinSessionFE`, { sessionId, name, socketId });
   };
 
   const handleBackendJoin = () => {
-    socket.emit(`joinSessionBE`, { sessionId, name });
-    setHasJoinedBE(true);
+    socket.on(`joinSessionBeServer`, (socketIdServer) => {
+      console.log(`handleBackendJoin socketIdServer`, socketIdServer);
+      if (socketIdServer === socketId) {
+        setHasJoinedBE(true);
+      }
+    });
+
+    socket.emit(`joinSessionBE`, { sessionId, name, socketId });
   };
 
   const onSaveNameClick = () => {
@@ -98,17 +106,20 @@ function Admin({ socket }) {
         </Button>
       </div>}
 
+      <p style={{color: `red`}}>socket.id {socket.id}</p>
+      <p style={{color: `red`}}>socketId {socketId} </p>
+
       <div className={style.pageWrapper}>
         <VoteSection
           handleJoin={handleFrontendJoin}
           isAdmin={isAdmin}
-          currentUserId={currentUserIdFE}
+          currentUserId={socketId}
           hasJoined={hasJoinedFE}
           groupName="Frontend"
           setValue={(value)=>{
             socket.emit(`setValueFE`, {
               sessionId, 
-              userId: currentUserIdFE, 
+              userId: socketId, 
               value,
             });
           }}
@@ -126,18 +137,17 @@ function Admin({ socket }) {
         <VoteSection
           handleJoin={handleBackendJoin}
           isAdmin={isAdmin}
-          currentUserId={currentUserIdBE}
+          currentUserId={socketId}
           hasJoined={hasJoinedBE}
           groupName="Backend"
           setValue={(value)=>{
             socket.emit(`setValueBE`, {
               sessionId, 
-              userId: currentUserIdBE, 
+              userId: socketId, 
               value,
             });
           }}
           shouldShowResults={shouldShowBEResults}
-          userId={currentUserIdBE}
           showAndResetResults={() => {
             if(!shouldShowBEResults) {
               socket.emit(`showResultsBE`, { sessionId });

@@ -19,11 +19,8 @@ function VoteSection({
 
 
   const isShowResultsButtonDisabled = useMemo(() => {
-    console.log(users?.some((user) => Boolean(!user.value)));
     return users?.some((user) => Boolean(!user.value));
   }, [users]);
-
-  console.log(isShowResultsButtonDisabled);
 
   const handleSetValue = (event) => {
     setValue(event.target.value);

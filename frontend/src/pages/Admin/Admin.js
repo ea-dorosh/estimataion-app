@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-// import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 import style from './admin.module.scss';
 import Button from '../../components/Button/Button';
 import VoteSection from '../../components/VoteSection/VoteSection';
 
-// const socket = io(`http://localhost:4000`);
 
 function Admin({ socket }) {
   const [users, setUsers] = useState(null);
@@ -18,10 +16,6 @@ function Admin({ socket }) {
   const [name, setName] = useState(``);
   const [hasName, setHasName] = useState(false);
 
-  const sessionUserUrl = useMemo(() => {
-    // return window.location.href.replace(`session`, `session-user`);
-    return window.location.href;
-  }, []);
 
   const isAdmin = useMemo(() => {
     const sessionValue = sessionStorage.getItem(`${sessionId}`);
@@ -74,13 +68,6 @@ function Admin({ socket }) {
     // eslint-disable-next-line
   }, [sessionId]);
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(sessionUserUrl)
-      .catch((err) => {
-        alert(`Failed to copy: `, err);
-      });
-  };
-
   const handleFrontendJoin = () => {
     socket.emit(`joinSessionFE`, { sessionId, name });
     setHasJoinedFE(true);
@@ -98,17 +85,6 @@ function Admin({ socket }) {
 
   return (
     <div>
-      {isAdmin && <div className={style.sessionUrl}>
-        <h4>{sessionUserUrl}</h4>
-
-        <Button 
-          onClick={handleCopyUrl}
-          primary
-        >
-          Copy Link
-        </Button>
-      </div>}
-
       {!isAdmin && !hasName && <div style={{display: `flex`, gap:`2rem`}}>
         <input
           type="text"

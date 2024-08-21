@@ -16,6 +16,8 @@ function Admin({ socket }) {
   const [name, setName] = useState(``);
   const [hasName, setHasName] = useState(false);
 
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+
 
   const socketId = useMemo(() => {
     return socket.id;
@@ -37,6 +39,10 @@ function Admin({ socket }) {
 
     socket.on(`updateUsers`, (users) => {
       setUsers(users);
+    });
+
+    socket.on(`sessionExpiredServer`, () => {
+      setIsSessionExpired(true);
     });
 
     socket.on(`showResultsFEServer`, () => {
@@ -93,6 +99,13 @@ function Admin({ socket }) {
 
   return (
     <div>
+      {isSessionExpired && <div>
+        <p style={{padding: `20px`, color: `white`}}>
+          Session not found or expired
+        </p>
+        </div>}
+
+      {!isSessionExpired && <div>
       {!isAdmin && !hasName && <div style={{display: `flex`, gap:`2rem`}}>
         <input
           type="text"
@@ -158,6 +171,7 @@ function Admin({ socket }) {
           users={users?.BE || []}
         />
       </div>
+      </div>}
     </div>
   );
 }

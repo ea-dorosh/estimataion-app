@@ -18,11 +18,9 @@ function Admin({ socket }) {
 
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
-
   const socketId = useMemo(() => {
     return socket.id;
   }, [socket.id]);
-
 
   const isAdmin = useMemo(() => {
     const sessionValue = sessionStorage.getItem(`${sessionId}`);
@@ -103,74 +101,74 @@ function Admin({ socket }) {
         <p style={{padding: `20px`, color: `white`}}>
           Session not found or expired
         </p>
-        </div>}
-
-      {!isSessionExpired && <div>
-      {!isAdmin && !hasName && <div style={{display: `flex`, gap:`2rem`}}>
-        <input
-          type="text"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Enter your name"
-        />
-
-        <Button onClick={onSaveNameClick}>
-          Save Name
-        </Button>
       </div>}
 
-      <p style={{color: `red`}}>socket.id {socket.id}</p>
-      <p style={{color: `red`}}>socketId {socketId} </p>
+      {!isSessionExpired && <div>
+        {!isAdmin && !hasName && <div style={{display: `flex`, gap:`2rem`}}>
+          <input
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Enter your name"
+          />
 
-      <div className={style.pageWrapper}>
-        <VoteSection
-          handleJoin={handleFrontendJoin}
-          isAdmin={isAdmin}
-          currentUserId={socketId}
-          hasJoined={hasJoinedFE}
-          groupName="Frontend"
-          setValue={(value)=>{
-            socket.emit(`setValueFE`, {
-              sessionId, 
-              userId: socketId, 
-              value,
-            });
-          }}
-          shouldShowResults={shouldShowFEResults}
-          showAndResetResults={() => {
-            if(!shouldShowFEResults) {
-              socket.emit(`showResultsFE`, { sessionId });
-            } else {
-              socket.emit(`resetResultsFE`, { sessionId });
-            }
-          }}
-          users={users?.FE || []}
-        />
+          <Button onClick={onSaveNameClick}>
+          Save Name
+          </Button>
+        </div>}
 
-        <VoteSection
-          handleJoin={handleBackendJoin}
-          isAdmin={isAdmin}
-          currentUserId={socketId}
-          hasJoined={hasJoinedBE}
-          groupName="Backend"
-          setValue={(value)=>{
-            socket.emit(`setValueBE`, {
-              sessionId, 
-              userId: socketId, 
-              value,
-            });
-          }}
-          shouldShowResults={shouldShowBEResults}
-          showAndResetResults={() => {
-            if(!shouldShowBEResults) {
-              socket.emit(`showResultsBE`, { sessionId });
-            } else {
-              socket.emit(`resetResultsBE`, { sessionId });
-            }
-          }}
-          users={users?.BE || []}
-        />
-      </div>
+        <p style={{color: `red`}}>socket.id {socket.id}</p>
+        <p style={{color: `red`}}>socketId {socketId} </p>
+
+        <div className={style.pageWrapper}>
+          <VoteSection
+            handleJoin={handleFrontendJoin}
+            isAdmin={isAdmin}
+            currentUserId={socketId}
+            hasJoined={hasJoinedFE}
+            groupName="Frontend"
+            setValue={(value)=>{
+              socket.emit(`setValueFE`, {
+                sessionId, 
+                userId: socketId, 
+                value,
+              });
+            }}
+            shouldShowResults={shouldShowFEResults}
+            showAndResetResults={() => {
+              if(!shouldShowFEResults) {
+                socket.emit(`showResultsFE`, { sessionId });
+              } else {
+                socket.emit(`resetResultsFE`, { sessionId });
+              }
+            }}
+            users={users?.FE || []}
+          />
+
+          <VoteSection
+            handleJoin={handleBackendJoin}
+            isAdmin={isAdmin}
+            currentUserId={socketId}
+            hasJoined={hasJoinedBE}
+            groupName="Backend"
+            setValue={(value)=>{
+              socket.emit(`setValueBE`, {
+                sessionId, 
+                userId: socketId, 
+                value,
+              });
+            }}
+            shouldShowResults={shouldShowBEResults}
+            showAndResetResults={() => {
+              if(!shouldShowBEResults) {
+                socket.emit(`showResultsBE`, { sessionId });
+              } else {
+                socket.emit(`resetResultsBE`, { sessionId });
+              }
+            }}
+            users={users?.BE || []}
+          />
+        </div>
       </div>}
     </div>
   );

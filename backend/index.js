@@ -16,7 +16,26 @@ const io = new SocketIoServer(server, {
 
 app.use(cors());
 
-const sessions = {};
+let sessions = {};
+
+const clearSessions = () => {
+  sessions = {}
+};
+
+const scheduleMidnightClear = () => {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+
+  const timeToMidnight = midnight.getTime() - now.getTime();;
+
+  setTimeout(() => {
+    clearSessions();
+    setInterval(clearSessions, 24 * 60 * 60 * 1000);
+  }, timeToMidnight);
+};
+
+scheduleMidnightClear();
 
 io.on(`connection`, (socket) => {
   const setSessionId = (sessionId) => {
@@ -45,13 +64,13 @@ io.on(`connection`, (socket) => {
 
   socket.on(`getUsers`, ({ sessionId }) => {
     setSessionId(sessionId);
-
-    if (!sessions[sessionId]) {
-      return;
-    }
     socket.join(sessionId);
 
-    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    if (!sessions[sessionId]) {
+      io.to(sessionId).emit(`sessionExpiredServer`);
+    } else {
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    }
   });
 
   socket.on(`joinSessionFE`, ({ sessionId, name, socketId }) => {
@@ -125,7 +144,7 @@ io.on(`connection`, (socket) => {
   });
 
   socket.on(`disconnect`, () => {
-    const sessionId = socket.sessionId; // Get the sessionId from the socket object
+    const sessionId = socket.sessionId;
 
     if (sessionId && sessions[sessionId]) {
       const session = sessions[sessionId];
@@ -150,6 +169,7 @@ io.on(`connection`, (socket) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

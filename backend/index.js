@@ -56,10 +56,7 @@ io.on(`connection`, (socket) => {
     }
     socket.join(sessionId);
 
-    io.to(sessionId).emit(`createSessionServer`, {
-      session: sessions[sessionId],
-      sessionId,
-    });
+    io.to(sessionId).emit(`createSessionServer`, { sessionId });
   });
 
   socket.on(`getUsers`, ({ sessionId }) => {

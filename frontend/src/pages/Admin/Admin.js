@@ -70,7 +70,6 @@ function Admin({ socket }) {
 
   const handleFrontendJoin = () => {
     socket.on(`joinSessionFeServer`, (socketIdServer) => {
-      console.log(`handleFrontendJoin socketIdServer`, socketIdServer);
       if (socketIdServer === socketId) {
         setHasJoinedFE(true);
       }
@@ -81,7 +80,6 @@ function Admin({ socket }) {
 
   const handleBackendJoin = () => {
     socket.on(`joinSessionBeServer`, (socketIdServer) => {
-      console.log(`handleBackendJoin socketIdServer`, socketIdServer);
       if (socketIdServer === socketId) {
         setHasJoinedBE(true);
       }

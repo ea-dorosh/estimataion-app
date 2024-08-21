@@ -5,9 +5,7 @@ function Home({ socket }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on(`createSessionServer`, ({session, sessionId}) => {
-      console.log(`createSessionServer`, session);
-
+    socket.on(`createSessionServer`, ({ sessionId }) => {
       sessionStorage.setItem(`${sessionId}`, `admin`);
 
       navigate(`/session/${sessionId}`);

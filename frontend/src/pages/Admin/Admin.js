@@ -33,6 +33,13 @@ function Admin({ socket }) {
   }, [sessionId]);
 
   useEffect(() => {
+    const savedUserName = localStorage.getItem(`userName`);
+
+    if (savedUserName) {
+      setName(savedUserName);
+      setHasName(true);
+    }
+    
     socket.emit(`getUsers`, { sessionId });
 
     socket.on(`updateUsers`, (users) => {
@@ -89,7 +96,7 @@ function Admin({ socket }) {
   };
 
   const onSaveNameClick = () => {
-    sessionStorage.setItem(`${sessionId}`, name);
+    localStorage.setItem(`userName`, name);
     setHasName(true);
   }
 

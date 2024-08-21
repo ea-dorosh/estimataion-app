@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect } from 'react';
+import Button from '../../components/Button/Button';
+import style from './home.module.scss';
 
 function Home({ socket }) {
   const navigate = useNavigate();
@@ -21,8 +23,13 @@ function Home({ socket }) {
   };
 
   return (
-    <div>
-      <button onClick={createSession}>Create Session</button>
+    <div className={style.buttonWrapper}>
+      <Button
+        primary
+        onClick={createSession}
+      >
+        Create Session
+      </Button>
     </div>
   );
 }

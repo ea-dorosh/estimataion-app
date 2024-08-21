@@ -104,23 +104,24 @@ function Admin({ socket }) {
       </div>}
 
       {!isSessionExpired && <div>
-        {!isAdmin && !hasName && <div style={{display: `flex`, gap:`2rem`}}>
+        {!isAdmin && !hasName && <div className={style.nameWrapper}>
           <input
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Enter your name"
+            className={style.input}
           />
 
-          <Button onClick={onSaveNameClick}>
-          Save Name
+          <Button
+            primary
+            onClick={onSaveNameClick}
+          >
+            Save Name
           </Button>
         </div>}
 
-        <p style={{color: `red`}}>socket.id {socket.id}</p>
-        <p style={{color: `red`}}>socketId {socketId} </p>
-
-        <div className={style.pageWrapper}>
+        {(isAdmin || hasName) && <div className={style.pageWrapper}>
           <VoteSection
             handleJoin={handleFrontendJoin}
             isAdmin={isAdmin}
@@ -168,7 +169,7 @@ function Admin({ socket }) {
             }}
             users={users?.BE || []}
           />
-        </div>
+        </div>}
       </div>}
     </div>
   );

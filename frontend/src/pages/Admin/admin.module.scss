@@ -23,3 +23,23 @@
   display: flex;
   gap: 2rem;
 }
+
+.nameWrapper {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 10rem;
+}
+
+.input {
+  background-color: $background-color;
+  color: $primary-contrast-color;
+  border: 1px solid $primary-contrast-color;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+
+  &:focus {
+    outline: none;
+  }
+}

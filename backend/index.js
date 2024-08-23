@@ -7,6 +7,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
+
+// Настройка CORS для Express
+app.use(cors({
+  origin: 'http://localhost:3000', // Разрешаем запросы с локального фронтенда
+  methods: ['GET', 'POST'],        // Разрешаем методы GET и POST
+  credentials: true                // Позволяем передавать куки и заголовки авторизации
+}));
+
 const server = http.createServer(app);
 const io = new SocketIoServer(server, {
   cors: {

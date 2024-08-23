@@ -8,18 +8,34 @@ dotenv.config();
 
 const app = express();
 
-// Настройка CORS для Express
+const allowedOrigins = [
+  process.env.ALLOWED_ORIGIN_LOCAL, 
+  process.env.ALLOWED_ORIGIN_PRODUCTION
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Разрешаем запросы с локального фронтенда
-  methods: ['GET', 'POST'],        // Разрешаем методы GET и POST
-  credentials: true                // Позволяем передавать куки и заголовки авторизации
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS`));
+    }
+  },
+  methods: [`GET`, `POST`],
+  credentials: true
 }));
 
 const server = http.createServer(app);
 const io = new SocketIoServer(server, {
   cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST'],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Not allowed by CORS`));
+      }
+    },
+    methods: [`GET`, `POST`],
     credentials: true
   }
 });
@@ -46,15 +62,11 @@ const scheduleMidnightClear = () => {
 scheduleMidnightClear();
 
 io.on(`connection`, (socket) => {
-  console.log(`connection`, socket);
-
-
   const setSessionId = (sessionId) => {
     socket.sessionId = sessionId;
   };
 
   socket.on(`createSession`, ({ sessionId }) => {
-    console.log(`createSession`, sessionId);
     setSessionId(sessionId);
 
     if (!sessions[sessionId]) {

@@ -24,8 +24,6 @@ const io = new SocketIoServer(server, {
   }
 });
 
-app.use(cors());
-
 let sessions = {};
 
 const clearSessions = () => {

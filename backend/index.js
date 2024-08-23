@@ -40,11 +40,15 @@ const scheduleMidnightClear = () => {
 scheduleMidnightClear();
 
 io.on(`connection`, (socket) => {
+  console.log(`connection`, socket);
+
+
   const setSessionId = (sessionId) => {
     socket.sessionId = sessionId;
   };
 
   socket.on(`createSession`, ({ sessionId }) => {
+    console.log(`createSession`, sessionId);
     setSessionId(sessionId);
 
     if (!sessions[sessionId]) {

@@ -1,4 +1,4 @@
-# Baufi Estimtion App
+# Baufi Estimation App
 
 ## Add .env files
 

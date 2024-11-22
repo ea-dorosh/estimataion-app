@@ -4,6 +4,13 @@ import style from './admin.module.scss';
 import Button from '../../components/Button/Button';
 import VoteSection from '../../components/VoteSection/VoteSection';
 
+const generateUUID = () => {
+  return `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, function(c) {
+    const r = (Math.random() * 16) | 0,
+      v = c === `x` ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 function Admin({ socket }) {
   const [users, setUsers] = useState(null);
@@ -20,9 +27,14 @@ function Admin({ socket }) {
 
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
-  const socketId = useMemo(() => {
-    return socket.id;
-  }, [socket.id]);
+  const userId = useMemo(() => {
+    let storedUserId = sessionStorage.getItem(`userId`);
+    if (!storedUserId) {
+      storedUserId = generateUUID();
+      sessionStorage.setItem(`userId`, storedUserId);
+    }
+    return storedUserId;
+  }, []);
 
   const isAdmin = useMemo(() => {
     const sessionValue = sessionStorage.getItem(`${sessionId}`);
@@ -36,23 +48,35 @@ function Admin({ socket }) {
 
   useEffect(() => {
     const savedUserName = localStorage.getItem(`userName`);
+    const savedHasJoinedFE = sessionStorage.getItem(`hasJoinedFE`);
+    const savedHasJoinedBE = sessionStorage.getItem(`hasJoinedBE`);
 
     if (savedUserName) {
       setName(savedUserName);
       setHasName(true);
     }
+
+    if (savedHasJoinedFE === `true`) {
+      setHasJoinedFE(true);
+    }
+
+    if (savedHasJoinedBE === `true`) {
+      setHasJoinedBE(true);
+    }
     
     socket.emit(`getUsers`, { sessionId });
 
-    socket.on(`updateUsers`, (users) => {
+    const handleUpdateUsers = (users) => {
       setUsers(users);
-    });
+      setHasJoinedFE(users.FE.some(user => user.id === userId));
+      setHasJoinedBE(users.BE.some(user => user.id === userId));
+    };
 
-    socket.on(`sessionExpiredServer`, () => {
+    const handleSessionExpired = () => {
       setIsSessionExpired(true);
-    });
+    };
 
-    socket.on(`showResultsFEServer`, () => {
+    const handleShowResultsFE = () => {
       setShouldShowFEResults(true);
 
       /* disable Admin button to prevent double click */
@@ -62,14 +86,14 @@ function Admin({ socket }) {
       setTimeout(() => {
         setIsFeButtonDisabled(false);
       }, 1500);
-    });
+    };
 
-    socket.on(`resetResultsFEServer`, (users) => {
+    const handleResetResultsFE = (users) => {
       setShouldShowFEResults(false);
       setUsers(users);
-    });
+    };
 
-    socket.on(`showResultsBEServer`, () => {
+    const handleShowResultsBE = () => {
       setShouldShowBEResults(true);
 
       /* disable Admin button to prevent double click */
@@ -79,38 +103,82 @@ function Admin({ socket }) {
       setTimeout(() => {
         setIsBeButtonDisabled(false);
       }, 1500);
-    });
+    };
 
-    socket.on(`resetResultsBEServer`, (users) => {
+    const handleResetResultsBE = (users) => {
       setShouldShowBEResults(false);
       setUsers(users);
-    });
+    };
+
+    socket.on(`updateUsers`, handleUpdateUsers);
+    socket.on(`sessionExpiredServer`, handleSessionExpired);
+    socket.on(`showResultsFEServer`, handleShowResultsFE);
+    socket.on(`resetResultsFEServer`, handleResetResultsFE);
+    socket.on(`showResultsBEServer`, handleShowResultsBE);
+    socket.on(`resetResultsBEServer`, handleResetResultsBE);
+
+    socket.emit(`register`, { sessionId, userId, role: isAdmin ? `admin` : `user`, name: isAdmin ? `` : name });
+
+    const handleReconnect = (attemptNumber) => {
+      socket.emit(`register`, { sessionId, userId, role: isAdmin ? `admin` : `user`, name: isAdmin ? `` : name });
+    };
+
+    socket.on(`reconnect`, handleReconnect);
+
+    if (!isAdmin && (savedHasJoinedFE === `true` || savedHasJoinedBE === `true`)) {
+      if (savedHasJoinedFE === `true`) {
+        socket.emit(`joinSessionFE`, { sessionId, name, userId });
+      }
+      if (savedHasJoinedBE === `true`) {
+        socket.emit(`joinSessionBE`, { sessionId, name, userId });
+      }
+    }
 
     return () => {
-      socket.disconnect();
+      socket.off(`updateUsers`, handleUpdateUsers);
+      socket.off(`sessionExpiredServer`, handleSessionExpired);
+      socket.off(`showResultsFEServer`, handleShowResultsFE);
+      socket.off(`resetResultsFEServer`, handleResetResultsFE);
+      socket.off(`showResultsBEServer`, handleShowResultsBE);
+      socket.off(`resetResultsBEServer`, handleResetResultsBE);
+      socket.off(`reconnect`, handleReconnect);
     };
 
     // eslint-disable-next-line
-  }, [sessionId]);
+  }, [sessionId, isAdmin, userId, socket]);
 
   const handleFrontendJoin = () => {
-    socket.on(`joinSessionFeServer`, (socketIdServer) => {
-      if (socketIdServer === socketId) {
+    const handleJoinSessionFE = (userIdServer) => {
+      if (userIdServer === userId) {
         setHasJoinedFE(true);
+        sessionStorage.setItem(`hasJoinedFE`, `true`);
       }
-    });
+    };
 
-    socket.emit(`joinSessionFE`, { sessionId, name, socketId });
+    socket.on(`joinSessionFeServer`, handleJoinSessionFE);
+
+    socket.emit(`joinSessionFE`, { sessionId, name, userId });
+
+    return () => {
+      socket.off(`joinSessionFeServer`, handleJoinSessionFE);
+    };
   };
 
   const handleBackendJoin = () => {
-    socket.on(`joinSessionBeServer`, (socketIdServer) => {
-      if (socketIdServer === socketId) {
+    const handleJoinSessionBE = (userIdServer) => {
+      if (userIdServer === userId) {
         setHasJoinedBE(true);
+        sessionStorage.setItem(`hasJoinedBE`, `true`);
       }
-    });
+    };
 
-    socket.emit(`joinSessionBE`, { sessionId, name, socketId });
+    socket.on(`joinSessionBeServer`, handleJoinSessionBE);
+
+    socket.emit(`joinSessionBE`, { sessionId, name, userId });
+
+    return () => {
+      socket.off(`joinSessionBeServer`, handleJoinSessionBE);
+    };
   };
 
   const onSaveNameClick = () => {
@@ -148,13 +216,13 @@ function Admin({ socket }) {
           <VoteSection
             handleJoin={handleFrontendJoin}
             isAdmin={isAdmin}
-            currentUserId={socketId}
+            currentUserId={userId}
             hasJoined={hasJoinedFE}
             groupName="Frontend"
             setValue={(value)=>{
               socket.emit(`setValueFE`, {
                 sessionId, 
-                userId: socketId, 
+                userId: userId, 
                 value,
               });
             }}
@@ -173,13 +241,13 @@ function Admin({ socket }) {
           <VoteSection
             handleJoin={handleBackendJoin}
             isAdmin={isAdmin}
-            currentUserId={socketId}
+            currentUserId={userId}
             hasJoined={hasJoinedBE}
             groupName="Backend"
             setValue={(value)=>{
               socket.emit(`setValueBE`, {
                 sessionId, 
-                userId: socketId, 
+                userId: userId, 
                 value,
               });
             }}

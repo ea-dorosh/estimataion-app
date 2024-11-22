@@ -14,6 +14,7 @@ export default [
         process: `readonly`,
         setTimeout: `readonly`,
         setInterval: `readonly`,
+        clearTimeout: `readonly`,
       },
     },
     plugins: {

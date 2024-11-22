@@ -41,6 +41,7 @@ const io = new SocketIoServer(server, {
 });
 
 let sessions = {};
+let disconnectTimeouts = {};
 
 const clearSessions = () => {
   sessions = {}
@@ -51,7 +52,7 @@ const scheduleMidnightClear = () => {
   const midnight = new Date();
   midnight.setHours(24, 0, 0, 0);
 
-  const timeToMidnight = midnight.getTime() - now.getTime();;
+  const timeToMidnight = midnight.getTime() - now.getTime();
 
   setTimeout(() => {
     clearSessions();
@@ -65,6 +66,37 @@ io.on(`connection`, (socket) => {
   const setSessionId = (sessionId) => {
     socket.sessionId = sessionId;
   };
+
+  socket.on(`register`, ({ sessionId, userId, role }) => {
+    socket.userId = userId;
+    setSessionId(sessionId);
+    socket.role = role;
+
+    if (!sessions[sessionId]) {
+      sessions[sessionId] = {
+        admin: null,
+        users: {
+          FE: [],
+          BE: [],
+        },
+      };
+    }
+
+    const session = sessions[sessionId];
+
+    if (role === `admin`) {
+      session.admin = socket.id;
+    }
+
+    socket.join(sessionId);
+
+    if (disconnectTimeouts[userId]) {
+      clearTimeout(disconnectTimeouts[userId]);
+      delete disconnectTimeouts[userId];
+    }
+
+    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+  });
 
   socket.on(`createSession`, ({ sessionId }) => {
     setSessionId(sessionId);
@@ -94,96 +126,109 @@ io.on(`connection`, (socket) => {
     }
   });
 
-  socket.on(`joinSessionFE`, ({ sessionId, name, socketId }) => {
+  socket.on(`joinSessionFE`, ({ sessionId, name, userId }) => {
     setSessionId(sessionId);
 
     if (!sessions[sessionId]) {
       return;
     }
 
-    const userExists = sessions[sessionId].users.FE.some(user => user.id === socketId);
-    if (!userExists) {
-      sessions[sessionId].users.FE.push({ id: socket.id, name });
-
-      io.to(sessionId).emit(`joinSessionFeServer`, socketId);
+    const session = sessions[sessionId];
+    const user = session.users.FE.find(user => user.id === userId);
+    if (!user) {
+      session.users.FE.push({ id: userId, socketId: socket.id, name });
+      io.to(sessionId).emit(`joinSessionFeServer`, userId);
       io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     }
   });
 
-  socket.on(`joinSessionBE`, ({ sessionId, name, socketId }) => {
+  socket.on(`joinSessionBE`, ({ sessionId, name, userId }) => {
     setSessionId(sessionId);
 
     if (!sessions[sessionId]) {
       return;
     }
 
-    const userExists = sessions[sessionId].users.BE.some(user => user.id === socketId);
-    if (!userExists) {
-      sessions[sessionId].users.BE.push({ id: socket.id, name });
-
-      io.to(sessionId).emit(`joinSessionBeServer`, socketId);
+    const session = sessions[sessionId];
+    const user = session.users.BE.find(user => user.id === userId);
+    if (!user) {
+      session.users.BE.push({ id: userId, socketId: socket.id, name });
+      io.to(sessionId).emit(`joinSessionBeServer`, userId);
       io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     }
   });
 
   socket.on(`setValueFE`, ({ sessionId, userId, value }) => {
-    const user = sessions[sessionId].users.FE.find(user => user.id === userId);
-    if (user) {
-      user.value = value;
-      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      const user = session.users.FE.find(user => user.id === userId);
+      if (user) {
+        user.value = value;
+        io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+      }
     }
   });
 
   socket.on(`setValueBE`, ({ sessionId, userId, value }) => {
-    const user = sessions[sessionId].users.BE.find(user => user.id === userId);
-    if (user) {
-      user.value = value;
-      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      const user = session.users.BE.find(user => user.id === userId);
+      if (user) {
+        user.value = value;
+        io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+      }
     }
   });
 
   socket.on(`showResultsFE`, ({ sessionId }) => {
-    io.to(sessionId).emit(`showResultsFEServer`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      io.to(sessionId).emit(`showResultsFEServer`, session.users);
+    }
   });
 
   socket.on(`resetResultsFE`, ({ sessionId }) => {
-    if (sessions[sessionId]) {
-      sessions[sessionId].users.FE.forEach(user => user.value = null);
-      io.to(sessionId).emit(`resetResultsFEServer`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      session.users.FE.forEach(user => user.value = null);
+      io.to(sessionId).emit(`resetResultsFEServer`, session.users);
     }
   });
 
   socket.on(`showResultsBE`, ({ sessionId }) => {
-    io.to(sessionId).emit(`showResultsBEServer`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      io.to(sessionId).emit(`showResultsBEServer`, session.users);
+    }
   });
 
   socket.on(`resetResultsBE`, ({ sessionId }) => {
-    if (sessions[sessionId]) {
-      sessions[sessionId].users.BE.forEach(user => user.value = null);
-      io.to(sessionId).emit(`resetResultsBEServer`, sessions[sessionId].users);
+    const session = sessions[sessionId];
+    if (session) {
+      session.users.BE.forEach(user => user.value = null);
+      io.to(sessionId).emit(`resetResultsBEServer`, session.users);
     }
   });
 
   socket.on(`disconnect`, () => {
     const sessionId = socket.sessionId;
+    const userId = socket.userId;
 
     if (sessionId && sessions[sessionId]) {
       const session = sessions[sessionId];
 
-      if (socket.id !== session.admin) {
-        const userIndexFE = session.users.FE.findIndex(user => user.id === socket.id);
+      if (socket.id !== session.admin && userId) {
+        disconnectTimeouts[userId] = setTimeout(() => {
+          [`FE`, `BE`].forEach(role => {
+            const index = session.users[role].findIndex(user => user.id === userId);
+            if (index !== -1) {
+              session.users[role].splice(index, 1);
+            }
+          });
 
-        if (userIndexFE !== -1) {
-          session.users.FE.splice(userIndexFE, 1)[0];
-        }
-
-        const userIndexBE = session.users.BE.findIndex(user => user.id === socket.id);
-
-        if (userIndexBE !== -1) {
-          session.users.BE.splice(userIndexBE, 1)[0];
-        }
-
-        io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+          io.to(sessionId).emit(`updateUsers`, session.users);
+          delete disconnectTimeouts[userId];
+        }, 7200000); // 2 hours
       }
     }
   });

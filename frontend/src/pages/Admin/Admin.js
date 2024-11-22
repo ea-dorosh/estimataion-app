@@ -10,6 +10,8 @@ function Admin({ socket }) {
   const { id: sessionId } = useParams();
   const [shouldShowFEResults, setShouldShowFEResults] = useState(false);
   const [shouldShowBEResults, setShouldShowBEResults] = useState(false);
+  const [isFeButtonDisabled, setIsFeButtonDisabled] = useState(false);
+  const [isBeButtonDisabled, setIsBeButtonDisabled] = useState(false);
 
   const [hasJoinedFE, setHasJoinedFE] = useState(false);
   const [hasJoinedBE, setHasJoinedBE] = useState(false);
@@ -52,6 +54,14 @@ function Admin({ socket }) {
 
     socket.on(`showResultsFEServer`, () => {
       setShouldShowFEResults(true);
+
+      /* disable Admin button to prevent double click */
+      setIsFeButtonDisabled(true);
+
+      /* enable Admin button in 1.5sec */
+      setTimeout(() => {
+        setIsFeButtonDisabled(false);
+      }, 1500);
     });
 
     socket.on(`resetResultsFEServer`, (users) => {
@@ -61,6 +71,14 @@ function Admin({ socket }) {
 
     socket.on(`showResultsBEServer`, () => {
       setShouldShowBEResults(true);
+
+      /* disable Admin button to prevent double click */
+      setIsBeButtonDisabled(true);
+
+      /* enable Admin button in 1.5sec */
+      setTimeout(() => {
+        setIsBeButtonDisabled(false);
+      }, 1500);
     });
 
     socket.on(`resetResultsBEServer`, (users) => {
@@ -148,6 +166,7 @@ function Admin({ socket }) {
                 socket.emit(`resetResultsFE`, { sessionId });
               }
             }}
+            isButtonDisabled={isFeButtonDisabled}
             users={users?.FE || []}
           />
 
@@ -172,6 +191,7 @@ function Admin({ socket }) {
                 socket.emit(`resetResultsBE`, { sessionId });
               }
             }}
+            isButtonDisabled={isBeButtonDisabled}
             users={users?.BE || []}
           />
         </div>}

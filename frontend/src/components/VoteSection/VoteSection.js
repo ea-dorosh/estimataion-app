@@ -3,7 +3,7 @@ import style from './voteSection.module.scss';
 import Button from '../../components/Button/Button';
 import classNames from 'classnames';
 
-const storyPointsValues = [`0.5`, `1`, `2`, `3`, `5`, `8`, `13`, `21`, `34`, `∞`];
+const storyPointsValues = [`0.5`, `1`, `2`, `3`, `5`, `8`, `13`, `21`, `∞`];
 
 function VoteSection({ 
   handleJoin,
@@ -13,6 +13,7 @@ function VoteSection({
   setValue,
   shouldShowResults,
   showAndResetResults,
+  isButtonDisabled,
   users,
   currentUserId,
 }) {
@@ -35,7 +36,7 @@ function VoteSection({
           <Button
             primary
             onClick={showAndResetResults}
-            disabled={isShowResultsButtonDisabled}
+            disabled={isShowResultsButtonDisabled || isButtonDisabled}
           >
             {!shouldShowResults ? `Reveal` : `Reset`}
           </Button>

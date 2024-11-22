@@ -2,4 +2,7 @@
 
 .app {
   padding: 40px;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
 }

@@ -134,6 +134,14 @@ function Admin({ socket }) {
       }
     }
 
+    const handleTabClose = () => {
+      if (!isAdmin) {
+        socket.emit(`leaveSession`, { sessionId, userId });
+      }
+    };
+
+    window.addEventListener(`beforeunload`, handleTabClose);
+
     return () => {
       socket.off(`updateUsers`, handleUpdateUsers);
       socket.off(`sessionExpiredServer`, handleSessionExpired);
@@ -142,6 +150,7 @@ function Admin({ socket }) {
       socket.off(`showResultsBEServer`, handleShowResultsBE);
       socket.off(`resetResultsBEServer`, handleResetResultsBE);
       socket.off(`reconnect`, handleReconnect);
+      window.removeEventListener(`beforeunload`, handleTabClose);
     };
 
     // eslint-disable-next-line

@@ -45,7 +45,7 @@ let disconnectTimeouts = {};
 
 const clearSessions = () => {
   sessions = {}
-};
+}
 
 const scheduleMidnightClear = () => {
   const now = new Date();
@@ -86,7 +86,7 @@ io.on(`connection`, (socket) => {
 
     if (role === `admin`) {
       session.admin = socket.id;
-    }
+    } 
 
     socket.join(sessionId);
 
@@ -103,7 +103,7 @@ io.on(`connection`, (socket) => {
 
     if (!sessions[sessionId]) {
       sessions[sessionId] = {
-        admin: socket.id,
+        admin: null,
         users: {
           FE: [],
           BE: [],
@@ -207,6 +207,26 @@ io.on(`connection`, (socket) => {
     if (session) {
       session.users.BE.forEach(user => user.value = null);
       io.to(sessionId).emit(`resetResultsBEServer`, session.users);
+    }
+  });
+
+  socket.on(`leaveSession`, ({ sessionId, userId }) => {
+    if (sessions[sessionId]) {
+      const session = sessions[sessionId];
+      
+      [`FE`, `BE`].forEach(role => {
+        const index = session.users[role].findIndex(user => user.id === userId);
+        if (index !== -1) {
+          session.users[role].splice(index, 1);
+        }
+      });
+
+      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
+      
+      if (disconnectTimeouts[userId]) {
+        clearTimeout(disconnectTimeouts[userId]);
+        delete disconnectTimeouts[userId];
+      }
     }
   });
 

@@ -230,6 +230,13 @@ io.on(`connection`, (socket) => {
     }
   });
 
+  socket.on(`triggerSnow`, ({ sessionId }) => {
+    if (sessionId && sessions[sessionId]) {
+      io.to(sessionId).emit(`snowEffect`);
+      console.log(`Snow effect triggered in session ${sessionId}`);
+    }
+  });
+
   socket.on(`disconnect`, () => {
     const sessionId = socket.sessionId;
     const userId = socket.userId;

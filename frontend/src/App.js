@@ -12,14 +12,22 @@ const socket = io(process.env.REACT_APP_BACKEND_URL, {
 });
 
 function App() {
+  const [isSnowing, setIsSnowing] = React.useState(false);
+
+
   return (
     <div className={style.app}>
       <Routes>
         <Route path="/" element={<Home socket={socket} />} />
-        <Route path="/session/:id" element={<Admin socket={socket} />} />
+        <Route 
+          path="/session/:id"
+          element={
+            <Admin socket={socket} letItSnow={() => setIsSnowing(!isSnowing)} />
+          } 
+        />
       </Routes>
 
-      <SnowfallEffect />
+      {isSnowing && <SnowfallEffect />}
     </div>
   );
 }

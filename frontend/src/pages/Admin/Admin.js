@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import style from './admin.module.scss';
 import Button from '../../components/Button/Button';
@@ -12,7 +12,7 @@ const generateUUID = () => {
   });
 }
 
-function Admin({ socket }) {
+function Admin({ socket, letItSnow }) {
   const [users, setUsers] = useState(null);
   const { id: sessionId } = useParams();
   const [shouldShowFEResults, setShouldShowFEResults] = useState(false);
@@ -47,6 +47,8 @@ function Admin({ socket }) {
 
     return false;
   }, [sessionId]);
+
+  const keyBufferRef = useRef(``);
 
   useEffect(() => {
     const savedUserName = localStorage.getItem(`userName`);
@@ -114,12 +116,19 @@ function Admin({ socket }) {
       setUsers(users);
     };
 
+    const handleSnowEffect = () => {
+      if (letItSnow && typeof letItSnow === `function`) {
+        letItSnow();
+      }
+    };
+
     socket.on(`updateUsers`, handleUpdateUsers);
     socket.on(`sessionExpiredServer`, handleSessionExpired);
     socket.on(`showResultsFEServer`, handleShowResultsFE);
     socket.on(`resetResultsFEServer`, handleResetResultsFE);
     socket.on(`showResultsBEServer`, handleShowResultsBE);
     socket.on(`resetResultsBEServer`, handleResetResultsBE);
+    socket.on(`snowEffect`, handleSnowEffect);
 
     socket.emit(`register`, { sessionId, userId, role: isAdmin ? `admin` : `user`, name: isAdmin ? `` : name });
 
@@ -146,6 +155,22 @@ function Admin({ socket }) {
 
     window.addEventListener(`beforeunload`, handleTabClose);
 
+    const handleKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+      keyBufferRef.current += key;
+
+      if (keyBufferRef.current.length > 4) {
+        keyBufferRef.current = keyBufferRef.current.slice(-4);
+      }
+
+      if (keyBufferRef.current === `snow`) {
+        socket.emit(`triggerSnow`, { sessionId });
+        keyBufferRef.current = ``;
+      }
+    };
+
+    window.addEventListener(`keydown`, handleKeyDown);
+
     return () => {
       socket.off(`updateUsers`, handleUpdateUsers);
       socket.off(`sessionExpiredServer`, handleSessionExpired);
@@ -153,12 +178,14 @@ function Admin({ socket }) {
       socket.off(`resetResultsFEServer`, handleResetResultsFE);
       socket.off(`showResultsBEServer`, handleShowResultsBE);
       socket.off(`resetResultsBEServer`, handleResetResultsBE);
+      socket.off(`snowEffect`, handleSnowEffect);
       socket.off(`reconnect`, handleReconnect);
       window.removeEventListener(`beforeunload`, handleTabClose);
+      window.removeEventListener(`keydown`, handleKeyDown);
     };
 
     // eslint-disable-next-line
-  }, [sessionId, isAdmin, userId, socket]);
+  }, [sessionId, isAdmin, userId, socket, name, letItSnow]);
 
   const handleFrontendJoin = () => {
     const handleJoinSessionFE = (userIdServer) => {

@@ -1,5 +1,9 @@
 @import 'variables';
 
+.loading {
+  color: $primary-contrast-color;
+}
+
 .sessionUrl {
   display: flex;
   align-items: center;

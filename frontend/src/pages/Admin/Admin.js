@@ -27,6 +27,8 @@ function Admin({ socket }) {
 
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const userId = useMemo(() => {
     let storedUserId = sessionStorage.getItem(`userId`);
     if (!storedUserId) {
@@ -70,10 +72,12 @@ function Admin({ socket }) {
       setUsers(users);
       setHasJoinedFE(users.FE.some(user => user.id === userId));
       setHasJoinedBE(users.BE.some(user => user.id === userId));
+      setIsLoading(false);
     };
 
     const handleSessionExpired = () => {
       setIsSessionExpired(true);
+      setIsLoading(false);
     };
 
     const handleShowResultsFE = () => {
@@ -193,6 +197,10 @@ function Admin({ socket }) {
   const onSaveNameClick = () => {
     localStorage.setItem(`userName`, name);
     setHasName(true);
+  }
+
+  if (isLoading) {
+    return <div className={style.loading}>Loading...</div>;
   }
 
   return (

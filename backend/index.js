@@ -45,7 +45,7 @@ let disconnectTimeouts = {};
 
 const clearSessions = () => {
   sessions = {}
-}
+};
 
 const scheduleMidnightClear = () => {
   const now = new Date();
@@ -86,7 +86,7 @@ io.on(`connection`, (socket) => {
 
     if (role === `admin`) {
       session.admin = socket.id;
-    } 
+    }
 
     socket.join(sessionId);
 
@@ -134,12 +134,17 @@ io.on(`connection`, (socket) => {
     }
 
     const session = sessions[sessionId];
-    const user = session.users.FE.find(user => user.id === userId);
-    if (!user) {
+    const userIndex = session.users.FE.findIndex(user => user.id === userId);
+    
+    if (userIndex !== -1) {
+      session.users.FE[userIndex].socketId = socket.id;
+      session.users.FE[userIndex].name = name;
+    } else {
       session.users.FE.push({ id: userId, socketId: socket.id, name });
       io.to(sessionId).emit(`joinSessionFeServer`, userId);
-      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     }
+
+    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
   });
 
   socket.on(`joinSessionBE`, ({ sessionId, name, userId }) => {
@@ -150,12 +155,17 @@ io.on(`connection`, (socket) => {
     }
 
     const session = sessions[sessionId];
-    const user = session.users.BE.find(user => user.id === userId);
-    if (!user) {
+    const userIndex = session.users.BE.findIndex(user => user.id === userId);
+    
+    if (userIndex !== -1) {
+      session.users.BE[userIndex].socketId = socket.id;
+      session.users.BE[userIndex].name = name;
+    } else {
       session.users.BE.push({ id: userId, socketId: socket.id, name });
       io.to(sessionId).emit(`joinSessionBeServer`, userId);
-      io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
     }
+
+    io.to(sessionId).emit(`updateUsers`, sessions[sessionId].users);
   });
 
   socket.on(`setValueFE`, ({ sessionId, userId, value }) => {
@@ -207,6 +217,39 @@ io.on(`connection`, (socket) => {
     if (session) {
       session.users.BE.forEach(user => user.value = null);
       io.to(sessionId).emit(`resetResultsBEServer`, session.users);
+    }
+  });
+
+  socket.on(`removeUser`, ({ sessionId, userId }) => {
+    if (sessions[sessionId]) {
+      const session = sessions[sessionId];
+
+      if (session.admin === socket.id) {
+        let removed = false;
+
+        [`FE`, `BE`].forEach(role => {
+          const index = session.users[role].findIndex(user => user.id === userId);
+          if (index !== -1) {
+            session.users[role].splice(index, 1);
+            removed = true;
+          }
+        });
+
+        if (removed) {
+          io.to(sessionId).emit(`updateUsers`, session.users);
+
+          if (disconnectTimeouts[userId]) {
+            clearTimeout(disconnectTimeouts[userId]);
+            delete disconnectTimeouts[userId];
+          }
+        } else {
+          socket.emit(`error`, { message: `User not found in any group` });
+        }
+      } else {
+        socket.emit(`error`, { message: `Only admin can remove users` });
+      }
+    } else {
+      socket.emit(`error`, { message: `Session not found` });
     }
   });
 

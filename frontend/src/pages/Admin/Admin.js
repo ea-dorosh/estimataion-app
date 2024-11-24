@@ -187,6 +187,10 @@ function Admin({ socket, letItSnow }) {
     // eslint-disable-next-line
   }, [sessionId, isAdmin, userId, socket, name, letItSnow]);
 
+  const handleRemoveUser = (userIdToRemove) => {
+    socket.emit(`removeUser`, { sessionId, userId: userIdToRemove });
+  };
+
   const handleFrontendJoin = () => {
     const handleJoinSessionFE = (userIdServer) => {
       if (userIdServer === userId) {
@@ -259,6 +263,7 @@ function Admin({ socket, letItSnow }) {
         {(isAdmin || hasName) && <div className={style.pageWrapper}>
           <VoteSection
             handleJoin={handleFrontendJoin}
+            handleRemoveUser={isAdmin ? handleRemoveUser : null}
             isAdmin={isAdmin}
             currentUserId={userId}
             hasJoined={hasJoinedFE}
@@ -284,6 +289,7 @@ function Admin({ socket, letItSnow }) {
 
           <VoteSection
             handleJoin={handleBackendJoin}
+            handleRemoveUser={isAdmin ? handleRemoveUser : null}
             isAdmin={isAdmin}
             currentUserId={userId}
             hasJoined={hasJoinedBE}

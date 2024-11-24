@@ -7,6 +7,7 @@ const storyPointsValues = [`0.5`, `1`, `2`, `3`, `5`, `8`, `13`, `21`, `∞`];
 
 function VoteSection({ 
   handleJoin,
+  handleRemoveUser,
   isAdmin,
   hasJoined,
   groupName,
@@ -17,7 +18,6 @@ function VoteSection({
   users,
   currentUserId,
 }) {
-
 
   const isShowResultsButtonDisabled = useMemo(() => {
     return users?.some((user) => Boolean(!user.value));
@@ -75,13 +75,19 @@ function VoteSection({
             [style.ready]: Boolean(user.value),
           });
 
-
           return <li 
             key={user.id}
             className={style.userWrapper}
           >
             <span className={style.userName}>
               {user.name}
+              {isAdmin && user.id !== currentUserId && (
+                <button 
+                  onClick={() => handleRemoveUser(user.id)} 
+                  className={style.removeButton}
+                  title={`Remove ${user.name}`}
+                />
+              )}
             </span>
 
             <span className={userValueClass}>
